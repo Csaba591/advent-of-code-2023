@@ -23,6 +23,9 @@ let _split_by delimiter str =
   Str.split (Str.regexp delimiter) str 
 ;;
 
+let list_product list =
+  List.fold_left ( * ) 1 list
+;;
 
 (* Solution *)
 
@@ -44,14 +47,15 @@ let rec _find_numbers start numbers line line_number =
 
 let find_numbers = _find_numbers 0 []
 
-type symbol_location = {line_num: int; pos: int}
+type symbol_location = {symbol: string; line_num: int; pos: int}
 
 let rec _find_symbols start symbols line line_num = 
   try 
     let _ = Str.search_forward (Str.regexp "[^0-9.]") line start in
+    let symbol = Str.matched_string line in
     let pos = Str.match_beginning () in
     let index_after_match = pos + 1 in
-    {line_num = line_num; pos = pos} :: (_find_symbols index_after_match symbols line line_num)
+    {symbol = symbol; line_num = line_num; pos = pos} :: (_find_symbols index_after_match symbols line line_num)
   with _ -> symbols
 ;;
 
@@ -91,3 +95,16 @@ let part_num_locs = List.flatten part_num_locss
 let part_nums = List.map (fun num_loc -> int_of_string num_loc.num) part_num_locs
 let part_nums_sum = _sum part_nums
 let () = Printf.printf "Part1: %d\n" (part_nums_sum)
+
+
+(* Part 2 *)
+
+let gear_locs = List.filter (fun sym_loc -> sym_loc.symbol = "*") all_symbols
+
+let gear_part_num_locss = List.map (fun sym_loc -> num_locs_in_area_of_symbol all_nums sym_loc) gear_locs
+let gear_part_num_locs_2_numberss = List.filter (fun num_locs -> List.length num_locs = 2) gear_part_num_locss
+let gear_part_nums_2_numberss = List.map (List.map (fun num_loc -> int_of_string num_loc.num)) gear_part_num_locs_2_numberss
+let gear_ratios = List.map list_product gear_part_nums_2_numberss
+let sum_gear_ratios = _sum gear_ratios
+
+let () = Printf.printf "Part2: %d\n" sum_gear_ratios
